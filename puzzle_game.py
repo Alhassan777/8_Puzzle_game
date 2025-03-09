@@ -33,8 +33,30 @@ DARK_BLUE = (0, 0, 139)
 BG_COLOR = (240, 248, 255)       # Light blue background
 TILE_COLOR = (100, 149, 237)     # Cornflower blue for tiles
 TILE_HIGHLIGHT = (144, 238, 144) # Light green for correct tiles
-BUTTON_COLOR = (176, 196, 222)   # Light steel blue for buttons
-BUTTON_HOVER = (135, 206, 250)   # Light sky blue for button hover
+
+# Button colors - distinct colors for different button types
+BUTTON_COLOR = (176, 196, 222)   # Light steel blue for buttons (default)
+BUTTON_HOVER = (135, 206, 250)   # Light sky blue for button hover (default)
+
+# New distinct button colors
+ALGORITHM_BTN_COLOR = (75, 0, 130)      # Indigo for algorithm buttons
+ALGORITHM_BTN_HOVER = (138, 43, 226)    # BlueViolet for algorithm hover
+SHUFFLE_BTN_COLOR = (0, 128, 0)         # Green for shuffle button
+SHUFFLE_BTN_HOVER = (50, 205, 50)       # LimeGreen for shuffle hover
+SPEED_BTN_COLOR = (220, 20, 60)         # Crimson for speed button
+SPEED_BTN_HOVER = (255, 69, 0)          # OrangeRed for speed hover
+
+# Tile colors - distinct color for each number
+TILE_COLORS = {
+    1: (46, 204, 113),    # Emerald Green
+    2: (52, 152, 219),     # Blue
+    3: (230, 126, 34),     # Orange
+    4: (52, 73, 94),       # Dark Blue
+    5: (142, 68, 173),     # Purple
+    6: (41, 128, 185),     # Light Blue
+    7: (192, 57, 43),      # Red
+    8: (39, 174, 96)       # Green
+}
 
 # Create the screen
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
