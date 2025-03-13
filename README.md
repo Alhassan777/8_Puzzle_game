@@ -1,5 +1,7 @@
 # 8-Puzzle Game Project
-![Uploading Screenshot 2025-03-13 at 12.59.04 AM.png…]()
+<div align="center">
+  <img width="593" alt="Screenshot 2025-03-13 at 12 59 24 AM" src="https://github.com/user-attachments/assets/29cae705-9802-4847-b8cf-92a9b1019c1c" />
+</div>
 
 ## Overview
 
