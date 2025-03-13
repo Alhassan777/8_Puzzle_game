@@ -39,6 +39,19 @@ TILE_HIGHLIGHT = (144, 238, 144) # Light green for correct tiles
 BUTTON_COLOR = (176, 196, 222)   # Light steel blue for buttons
 BUTTON_HOVER = (135, 206, 250)   # Light sky blue for button hover
 
+# Distinct button colors for different types
+UTILITY_BUTTON_COLOR = (255, 165, 0)    # Orange for utility buttons (Shuffle, Speed)
+UTILITY_BUTTON_HOVER = (255, 215, 0)    # Gold for utility button hover
+
+BFS_DFS_UCS_COLOR = (100, 149, 237)     # Cornflower blue for BFS/DFS/UCS
+BFS_DFS_UCS_HOVER = (30, 144, 255)      # Dodger blue for hover
+
+ASTAR_GRAPH_COLOR = (60, 179, 113)      # Medium sea green for A* Graph
+ASTAR_GRAPH_HOVER = (46, 139, 87)       # Sea green for hover
+
+ASTAR_TREE_COLOR = (147, 112, 219)      # Medium purple for A* Tree
+ASTAR_TREE_HOVER = (138, 43, 226)       # Blue violet for hover
+
 # Create the screen
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('8-Puzzle Game')
@@ -72,6 +85,7 @@ class PuzzleGame:
         # Animation speed (milliseconds)
         self.animation_speed = 500
         self.last_move_time = 0
+        self.last_speed_change_time = 0
         
         # Highlight the last moved tile
         self.last_moved_tile = None
@@ -216,6 +230,8 @@ class PuzzleGame:
                             self.blank_pos = (i, j)
                             break
                 self.last_move_time = now
+                # Increment the move counter for each step in the solution
+                self.moves += 1
                 if self.solution_index == len(self.solution_path) - 1:
                     self.solving = False
 
@@ -406,30 +422,34 @@ def main():
                 correct = (val != 0 and val == game.goal_state[r][c])
                 draw_tile(screen, val, r, c, highlight=correct, game=game)
         
-        # Row 0: Shuffle + Speed
+        # Row 0: Shuffle + Speed (with distinct utility button colors)
         draw_button(
             screen, "Shuffle", 
             button_x1, buttons_start_y, 
             button_width, BUTTON_HEIGHT, 
-            BUTTON_COLOR, BUTTON_HOVER,
+            UTILITY_BUTTON_COLOR, UTILITY_BUTTON_HOVER,
             action=lambda: game.shuffle(30)
         )
         
         speed_label = ("Speed: Fast" if game.animation_speed < 300 else
                        "Speed: Medium" if game.animation_speed < 700 else
                        "Speed: Slow")
+        def change_speed():
+            current_time = pygame.time.get_ticks()
+            # Only allow speed change if at least 500ms have passed since the last change
+            if current_time - game.last_speed_change_time > 500:
+                game.animation_speed = (game.animation_speed + 100) % 900 + 100
+                game.last_speed_change_time = current_time
+                
         draw_button(
             screen, speed_label, 
             button_x2, buttons_start_y, 
             button_width, BUTTON_HEIGHT, 
-            BUTTON_COLOR, BUTTON_HOVER,
-            action=lambda: setattr(
-                game, 'animation_speed', 
-                (game.animation_speed + 300) % 900 + 100
-            )
+            UTILITY_BUTTON_COLOR, UTILITY_BUTTON_HOVER,
+            action=change_speed
         )
         
-        # Next rows: BFS, DFS, UCS, A* Graph/Tree combos
+        # Next rows: BFS, DFS, UCS, A* Graph/Tree combos with distinct colors
         # We'll have 9 algorithms total, so let's place them starting from row_index=1
         for i, alg in enumerate(algorithms):
             row_index = i // 2 + 1  # offset by 1 to skip the top row
@@ -437,11 +457,22 @@ def main():
             bx = button_x1 if col_index == 0 else button_x2
             by = buttons_start_y + row_index * row_step
             
+            # Choose button color based on algorithm type
+            if "BFS" == alg or "DFS" == alg or "UCS" == alg:
+                btn_color = BFS_DFS_UCS_COLOR
+                hover_color = BFS_DFS_UCS_HOVER
+            elif "A* Graph" in alg:
+                btn_color = ASTAR_GRAPH_COLOR
+                hover_color = ASTAR_GRAPH_HOVER
+            else:  # A* Tree
+                btn_color = ASTAR_TREE_COLOR
+                hover_color = ASTAR_TREE_HOVER
+            
             draw_button(
                 screen, alg,
                 bx, by,
                 button_width, BUTTON_HEIGHT,
-                BUTTON_COLOR, BUTTON_HOVER,
+                btn_color, hover_color,
                 action=lambda a=alg: game.solve(a)
             )
         
