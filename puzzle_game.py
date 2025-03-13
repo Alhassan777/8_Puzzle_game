@@ -8,10 +8,10 @@ from puzzle_solver import (
     solvePuzzleDFS,
     solvePuzzleUCS,
     solvePuzzleAStarGraph,
-    solvePuzzleAStarTree, 
-    h1, h2, h3  # If you want direct access to heuristics
+    solvePuzzleAStarTree,
+    # Heuristics: 0=h1, 1=h2, 2=h3
+    h1, h2, h3  
 )
-
 
 # Initialize pygame
 pygame.init()
@@ -35,29 +35,9 @@ BG_COLOR = (240, 248, 255)       # Light blue background
 TILE_COLOR = (100, 149, 237)     # Cornflower blue for tiles
 TILE_HIGHLIGHT = (144, 238, 144) # Light green for correct tiles
 
-# Button colors - distinct colors for different button types
-BUTTON_COLOR = (176, 196, 222)   # Light steel blue for buttons (default)
-BUTTON_HOVER = (135, 206, 250)   # Light sky blue for button hover (default)
-
-# New distinct button colors
-ALGORITHM_BTN_COLOR = (75, 0, 130)      # Indigo for algorithm buttons
-ALGORITHM_BTN_HOVER = (138, 43, 226)    # BlueViolet for algorithm hover
-SHUFFLE_BTN_COLOR = (0, 128, 0)         # Green for shuffle button
-SHUFFLE_BTN_HOVER = (50, 205, 50)       # LimeGreen for shuffle hover
-SPEED_BTN_COLOR = (220, 20, 60)         # Crimson for speed button
-SPEED_BTN_HOVER = (255, 69, 0)          # OrangeRed for speed hover
-
-# Tile colors - distinct color for each number
-TILE_COLORS = {
-    1: (46, 204, 113),    # Emerald Green
-    2: (52, 152, 219),     # Blue
-    3: (230, 126, 34),     # Orange
-    4: (52, 73, 94),       # Dark Blue
-    5: (142, 68, 173),     # Purple
-    6: (41, 128, 185),     # Light Blue
-    7: (192, 57, 43),      # Red
-    8: (39, 174, 96)       # Green
-}
+# Button colors
+BUTTON_COLOR = (176, 196, 222)   # Light steel blue for buttons
+BUTTON_HOVER = (135, 206, 250)   # Light sky blue for button hover
 
 # Create the screen
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -68,6 +48,9 @@ font = pygame.font.SysFont('Arial', 36)
 small_font = pygame.font.SysFont('Arial', 20)
 info_font = pygame.font.SysFont('Arial', 18)
 
+##############################################################################
+# Main Game Class
+##############################################################################
 class PuzzleGame:
     def __init__(self):
         # Default puzzle state (goal)
@@ -137,15 +120,16 @@ class PuzzleGame:
     
     def is_solved(self):
         return self.state == self.goal_state
-    
+
+    ##########################################################################
+    # Solve the puzzle: BFS, DFS, UCS, A* (Graph / Tree) with any of the 3 heuristics
+    ##########################################################################
     def solve(self, algorithm: str):
         """
-        Solve the puzzle with one of the following:
-          - BFS
-          - DFS
-          - UCS
-          - A* Graph (Manhattan)
-          - A* Tree (Manhattan)
+        Solve the puzzle with one of:
+          BFS, DFS, UCS,
+          A* Graph (h1, h2, h3),
+          A* Tree  (h1, h2, h3).
         """
         # Reset old solution
         self.solution_path = None
@@ -153,29 +137,50 @@ class PuzzleGame:
         self.solving = False
         self.solution_stats = None
         
+        # BFS
         if algorithm == "BFS":
             steps, expanded, max_frontier, path, err = solvePuzzleBFS(self.state)
             self._save_solution(steps, expanded, max_frontier, path, err, "BFS", "N/A")
         
+        # DFS
         elif algorithm == "DFS":
             steps, expanded, max_frontier, path, err = solvePuzzleDFS(self.state)
             self._save_solution(steps, expanded, max_frontier, path, err, "DFS", "N/A")
         
+        # UCS
         elif algorithm == "UCS":
             steps, expanded, max_frontier, path, err = solvePuzzleUCS(self.state)
             self._save_solution(steps, expanded, max_frontier, path, err, "UCS", "N/A")
         
-        elif algorithm == "A* Graph":
-            # Always use Manhattan distance for A*
-            steps, expanded, max_frontier, path, err = solvePuzzleAStarGraph(self.state, h2)
-            self._save_solution(steps, expanded, max_frontier, path, err, 
-                                "A* Graph", "Manhattan Distance")
+        # A* Graph (h1)
+        elif algorithm == "A* Graph (h1)":
+            steps, expanded, max_frontier, path, err = solvePuzzleAStarGraph(self.state, heuristic_index=0)
+            self._save_solution(steps, expanded, max_frontier, path, err, "A* Graph", "Misplaced Tiles")
         
-        elif algorithm == "A* Tree":
-            # Always use Manhattan distance for A*
-            steps, expanded, max_frontier, path, err = solvePuzzleAStarTree(self.state, h2)
-            self._save_solution(steps, expanded, max_frontier, path, err, 
-                                "A* Tree", "Manhattan Distance")
+        # A* Graph (h2)
+        elif algorithm == "A* Graph (h2)":
+            steps, expanded, max_frontier, path, err = solvePuzzleAStarGraph(self.state, heuristic_index=1)
+            self._save_solution(steps, expanded, max_frontier, path, err, "A* Graph", "Manhattan Distance")
+        
+        # A* Graph (h3)
+        elif algorithm == "A* Graph (h3)":
+            steps, expanded, max_frontier, path, err = solvePuzzleAStarGraph(self.state, heuristic_index=2)
+            self._save_solution(steps, expanded, max_frontier, path, err, "A* Graph", "Linear Conflict")
+        
+        # A* Tree (h1)
+        elif algorithm == "A* Tree (h1)":
+            steps, expanded, max_frontier, path, err = solvePuzzleAStarTree(self.state, heuristic_index=0)
+            self._save_solution(steps, expanded, max_frontier, path, err, "A* Tree", "Misplaced Tiles")
+        
+        # A* Tree (h2)
+        elif algorithm == "A* Tree (h2)":
+            steps, expanded, max_frontier, path, err = solvePuzzleAStarTree(self.state, heuristic_index=1)
+            self._save_solution(steps, expanded, max_frontier, path, err, "A* Tree", "Manhattan Distance")
+        
+        # A* Tree (h3)
+        elif algorithm == "A* Tree (h3)":
+            steps, expanded, max_frontier, path, err = solvePuzzleAStarTree(self.state, heuristic_index=2)
+            self._save_solution(steps, expanded, max_frontier, path, err, "A* Tree", "Linear Conflict")
     
     def _save_solution(self, steps, expanded, max_frontier, path, err, algo_name, heuristic_name):
         """Stores the solution details (if any) for display/animation."""
@@ -197,7 +202,7 @@ class PuzzleGame:
             self.solution_stats = None
 
     def step_solution(self):
-        """Advance one step in the solution path if solving."""
+        """Advance one step in the solution path if we're currently solving."""
         if self.solving and self.solution_path and self.solution_index < len(self.solution_path) - 1:
             now = pygame.time.get_ticks()
             if now - self.last_move_time > self.animation_speed:
@@ -213,6 +218,10 @@ class PuzzleGame:
                 self.last_move_time = now
                 if self.solution_index == len(self.solution_path) - 1:
                     self.solving = False
+
+##############################################################################
+# Drawing Functions
+##############################################################################
 
 def draw_tile(surface, value, row, col, highlight=False, game=None):
     x = GRID_OFFSET_X + col * TILE_SIZE
@@ -338,21 +347,28 @@ def draw_info(surface, game):
             surface.blit(line_text, (20, stats_y))
             stats_y += 20
 
+##############################################################################
+# Main loop
+##############################################################################
 def main():
     game = PuzzleGame()
     clock = pygame.time.Clock()
     running = True
     
-    # Only five algorithms
+    # Algorithm options:
     algorithms = [
         "BFS", 
         "DFS", 
-        "UCS", 
-        "A* Graph", 
-        "A* Tree"
+        "UCS",
+        "A* Graph (h1)",
+        "A* Graph (h2)",
+        "A* Graph (h3)",
+        "A* Tree (h1)",
+        "A* Tree (h2)",
+        "A* Tree (h3)"
     ]
     
-    # Two columns of buttons, plus top row for Shuffle/Speed
+    # Layout: 2 columns of buttons, plus top row for Shuffle/Speed
     button_width = (WIDTH - 3 * BUTTON_MARGIN) // 2
     button_x1 = BUTTON_MARGIN
     button_x2 = 2 * BUTTON_MARGIN + button_width
@@ -413,9 +429,10 @@ def main():
             )
         )
         
-        # Remaining rows: BFS, DFS, UCS, A* Graph, A* Tree
+        # Next rows: BFS, DFS, UCS, A* Graph/Tree combos
+        # We'll have 9 algorithms total, so let's place them starting from row_index=1
         for i, alg in enumerate(algorithms):
-            row_index = i // 2 + 1  # offset by 1 for top row
+            row_index = i // 2 + 1  # offset by 1 to skip the top row
             col_index = i % 2
             bx = button_x1 if col_index == 0 else button_x2
             by = buttons_start_y + row_index * row_step
