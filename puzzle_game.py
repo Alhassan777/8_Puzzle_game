@@ -4,13 +4,14 @@ import random
 import time
 from puzzle_solver import (
     PuzzleNode, 
-    solvePuzzleBFS, 
-    solvePuzzleDFS, 
-    solvePuzzleUCS, 
-    solvePuzzleAStarGraph,  # A* (graph search)
-    solvePuzzleAStarTree,   # A* (tree search)
-    h2                      # Manhattan distance
+    solvePuzzleBFS,
+    solvePuzzleDFS,
+    solvePuzzleUCS,
+    solvePuzzleAStarGraph,
+    solvePuzzleAStarTree, 
+    h1, h2, h3  # If you want direct access to heuristics
 )
+
 
 # Initialize pygame
 pygame.init()
