@@ -90,21 +90,28 @@ class PuzzleGame:
         # Highlight the last moved tile
         self.last_moved_tile = None
         
+        # For storing shuffle states
+        self.curr_config = None
+        self.last_shuffle_state = None
+        self.last_shuffle_blank_pos = None
+        
         # Shuffle on startup
         self.shuffle(30)
     
     def shuffle(self, moves=30):
         """Shuffle the puzzle by making random valid moves."""
-        self.state = [[1, 2, 3],
-                      [4, 5, 6],
-                      [7, 8, 0]]
-        self.blank_pos = (2, 2)
+        # Store current state before shuffling
+        self.last_shuffle_state = [row[:] for row in self.state]
+        self.last_shuffle_blank_pos = self.blank_pos
+        
+        # Reset moves and solution-related variables
         self.moves = 0
         self.solution_path = None
         self.solution_index = 0
         self.solving = False
         self.solution_stats = None
         
+        # Perform the shuffle
         for _ in range(moves):
             possible_moves = []
             for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
@@ -115,6 +122,10 @@ class PuzzleGame:
             if possible_moves:
                 chosen = random.choice(possible_moves)
                 self.move_tile(chosen[0], chosen[1], increment_move=False)
+        
+        # Store the shuffled configuration after all moves are complete
+        self.curr_config = [row[:] for row in self.state]
+        self.last_shuffle_blank_pos = self.blank_pos
     
     def move_tile(self, row, col, increment_move=True):
         """Slide a tile if adjacent to the blank space."""
@@ -134,6 +145,17 @@ class PuzzleGame:
     
     def is_solved(self):
         return self.state == self.goal_state
+        
+    def revert_to_last_shuffle(self):
+        """Revert to the last shuffle state if available."""
+        if self.curr_config:
+            self.state = [row[:] for row in self.curr_config]
+            self.blank_pos = self.last_shuffle_blank_pos
+            self.moves = 0
+            self.solution_path = None
+            self.solution_index = 0
+            self.solving = False
+            self.solution_stats = None
 
     ##########################################################################
     # Solve the puzzle: BFS, DFS, UCS, A* (Graph / Tree) with any of the 3 heuristics
@@ -422,13 +444,29 @@ def main():
                 correct = (val != 0 and val == game.goal_state[r][c])
                 draw_tile(screen, val, r, c, highlight=correct, game=game)
         
-        # Row 0: Shuffle + Speed (with distinct utility button colors)
+        # Row 0: New Shuffle + Revert + Speed (with distinct utility button colors)
+        # Adjust button widths for three buttons
+        utility_button_width = (WIDTH - 4 * BUTTON_MARGIN) // 3
+        utility_x1 = BUTTON_MARGIN
+        utility_x2 = 2 * BUTTON_MARGIN + utility_button_width
+        utility_x3 = 3 * BUTTON_MARGIN + 2 * utility_button_width
+        
+        # New Shuffle button
         draw_button(
-            screen, "Shuffle", 
-            button_x1, buttons_start_y, 
-            button_width, BUTTON_HEIGHT, 
+            screen, "New Shuffle", 
+            utility_x1, buttons_start_y, 
+            utility_button_width, BUTTON_HEIGHT, 
             UTILITY_BUTTON_COLOR, UTILITY_BUTTON_HOVER,
             action=lambda: game.shuffle(30)
+        )
+        
+        # Revert button
+        draw_button(
+            screen, "Revert", 
+            utility_x2, buttons_start_y, 
+            utility_button_width, BUTTON_HEIGHT, 
+            UTILITY_BUTTON_COLOR, UTILITY_BUTTON_HOVER,
+            action=lambda: game.revert_to_last_shuffle()
         )
         
         speed_label = ("Speed: Fast" if game.animation_speed < 300 else
@@ -443,8 +481,8 @@ def main():
                 
         draw_button(
             screen, speed_label, 
-            button_x2, buttons_start_y, 
-            button_width, BUTTON_HEIGHT, 
+            utility_x3, buttons_start_y, 
+            utility_button_width, BUTTON_HEIGHT, 
             UTILITY_BUTTON_COLOR, UTILITY_BUTTON_HOVER,
             action=change_speed
         )
