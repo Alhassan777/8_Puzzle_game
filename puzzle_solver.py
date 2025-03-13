@@ -140,11 +140,11 @@ def is_goal(state):
     """
     Checks if 'state' is the goal configuration: 0 in top-left, then 1..n^2-1 in row-major order.
     """
+    # Flatten
     n = len(state)
-    flat = []
-    for row in state:
-        flat.extend(row)
-    return flat == list(range(n*n))
+    flat = [tile for row in state for tile in row]
+    # Expect 1..n^2-1, then 0
+    return flat == list(range(1, n*n)) + [0]
 
 def state_to_tuple(state):
     """Convert a 2D list 'state' into a tuple of tuples for hashing."""
